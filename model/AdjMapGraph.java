@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Stack;
 
 import exception.ArestaNotFoundException;
 import exception.DuplicateKeyException;
@@ -36,7 +38,7 @@ public class AdjMapGraph<T> implements IGraph, Serializable {
         if(adjacencias.containsKey(object)) {
             throw new DuplicateKeyException();
         }
-        adjacencias.put(object, null);
+        adjacencias.put(object, new HashMap<>());
     }
     
     public Iterator vertices() {
@@ -103,4 +105,65 @@ public class AdjMapGraph<T> implements IGraph, Serializable {
     	throw new ArestaNotFoundException();
     }
     
+    /**
+     * Função que retorna os vértices adjacentes ao vertice passado como parâmetro, se não existir nenhum vértice adjacente ele retorna <b>null</b>.
+     * 
+     * @param T vertice
+     * @return HashMap<T, Aresta<T>> 
+     * */
+	public HashMap<T, Aresta<T>> getAdjacentes(T vertice) {
+		return (this.adjacencias.get(vertice).isEmpty() ? null : this.adjacencias.get(vertice));
+    }
+	
+	
+	/**
+	 * Função que retorna o menor caminho entre um vertice e os demais do grafo, baseada no algoritmo de menor caminho de Dijkstra.
+	 * 
+	 * @param T vertice
+	 * @return HashMap<T, ShoPathEntry<T>> shortestPath
+	 * */
+	public HashMap<T, ShoPathEntry<T>> shortestPath(T vertice) throws ArestaNotFoundException {
+		HashMap<T, ShoPathEntry<T>> shortest = new HashMap<>();
+		PriorityQueue<ShoPathEntry<T>> queue = new PriorityQueue<>();
+		
+		queue.offer(new ShoPathEntry<T>(vertice, null, 0));
+		
+		while (!queue.isEmpty()) {
+			ShoPathEntry<T> entry = queue.poll();
+			vertice = entry.getAtual();
+			
+			if (!shortest.containsKey(vertice)) {
+				shortest.put(vertice, entry);
+				for (T temp : this.getAdjacentes(vertice).keySet()) {
+					double distancia = this.getAresta(vertice, temp).getPeso();
+					distancia = distancia + entry.getDistancia();
+					
+					ShoPathEntry<T> tempEntry = shortest.get(temp);
+					if (tempEntry == null || distancia < tempEntry.getDistancia()) {
+						queue.offer(new ShoPathEntry<T>(temp, vertice, distancia));
+					}
+				}
+			}
+		}
+		
+		return shortest;
+	}
+	
+	/**
+	 * Função que retorna o menor caminho entre dois vertices
+	 * 
+	 * @param T inicio, T fim, HashMap<T, ShoPathEntry<T>> paths
+	 * @return Stack<ShoPathEntry<T>> stack
+	 * */
+	public Stack<ShoPathEntry<T>> path(T inicio, T fim, HashMap<T, ShoPathEntry<T>> paths) {
+		
+		Stack<ShoPathEntry<T>> stack = new Stack<>();
+			while(!inicio.equals(fim)){
+				stack.push(paths.get(fim));
+				fim = stack.peek().getAnterior();
+			}
+			
+		stack.push(paths.get(fim));
+		return stack;
+	}
 }
