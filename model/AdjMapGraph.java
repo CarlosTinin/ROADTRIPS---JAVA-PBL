@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import exception.ArestaNotFoundException;
 import exception.DuplicateKeyException;
+import util.IGraph;
 
 /**
  *

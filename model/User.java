@@ -69,4 +69,21 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	/** 
+	 * Equals, compara o email
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof User) {
+			User user = (User) obj;
+			if (user.email.equals(this.email)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
