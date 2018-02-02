@@ -1,18 +1,16 @@
 package view;
 
 import exception.UserNotFoundException;
-import facade.UserFacade;
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -20,17 +18,23 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.Admin;
+import model.User;
  
-public class Login extends Application {
-	
-	private UserFacade userFacade = new UserFacade();
+public class Login extends LayoutUser {
 	
     public static void main(String[] args) {
         launch(args);
     }
     
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
+    	super.start(primaryStage);
+    }
+    
+    @Override
+    public void content(BorderPane mainPane, Stage primaryStage) {
+    	/*------   Begin content  ------*/
     	final Text actiontarget = new Text();
     	primaryStage.setTitle("Login de Usuário");
     	
@@ -38,10 +42,7 @@ public class Login extends Application {
     	grid.setAlignment(Pos.CENTER); // Indica que a posição do grid é no centro da janela
     	grid.setHgap(10); // Gap é meio que uma separação, HGap indica o tamanho da separação horizontal
     	grid.setVgap(10); // VGap separação vertical
-    	grid.setPadding(new Insets(25, 25, 25, 25)); // define os pixels nos quatro lados
-    	
-    	Scene scene = new Scene(grid, 300, 275); // O JFx Aplicattion sepera a aplicação entre Stage e Scene, aqui inicia uma nova scene
-    	primaryStage.setScene(scene); 
+    	grid.setPadding(new Insets(25, 25, 25, 25)); // define os pixels nos quatro lados 
     	
     	// Header
     	Text scenetitle = new Text("ROADTRIPS");
@@ -82,10 +83,26 @@ public class Login extends Application {
             public void handle(ActionEvent e) {
             	if (!userTextField.getText().isEmpty() && !pwBox.getText().isEmpty()) {
             		try {
-            			if (userFacade.validateCredentials(userTextField.getText(), pwBox.getText())) {               				
-            				actiontarget.setFill(Color.DARKGREEN);
-                        	actiontarget.setText("Logou");
-            			}
+            			getUserFacade().validateCredentials(userTextField.getText(), pwBox.getText()); // Valida as credencias retornando uma nova sessão com o usuário autenticado
+            			User user = getUserFacade().auth();
+            			if (user instanceof Admin) {
+            				AdminMain admMain = new AdminMain();
+                			primaryStage.close();
+            				try {
+            					admMain.start(primaryStage);
+    						} catch (Exception e1) {
+    							System.out.println("Exception mainpage login");
+    						}
+            			} else {
+            				UserMain usrMain = new UserMain();
+                			primaryStage.close();
+            				try {
+            					System.out.println("common");
+    							usrMain.start(primaryStage);
+    						} catch (Exception e1) {
+    							System.out.println("Exception mainpage login");
+    						}
+            			}            			
             		} catch(UserNotFoundException exception) {
                     	actiontarget.setFill(Color.FIREBRICK);
                     	actiontarget.setText("Credencias inválidas!");
@@ -103,12 +120,16 @@ public class Login extends Application {
 			public void handle(MouseEvent event) {
 				Register register = new Register();
 				primaryStage.close();
-				register.start(primaryStage);				
+				try {
+					register.start(primaryStage);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}				
 			}
         	
         });
         
-        
-    	primaryStage.show();
-    }
+        mainPane.setCenter(grid);
+	    /*------   End content  ------*/
+	}
 }

@@ -1,15 +1,17 @@
 package view;
 
 import exception.DuplicateUserException;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -18,16 +20,24 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
- 
 
-public class Register extends LayoutUser {
+public class AdminRegister extends AdminMain {
 	
-	public static void main(String[] args) {
-        launch(args);
-    }
+	public static void main(String args[]) {
+		launch(args);
+	}
 	
-	@Override
+	public void start(Stage primaryStage) throws Exception {
+		super.start(primaryStage);
+	}
+	
 	public void content(BorderPane mainPane, Stage primaryStage) {
+		super.content(mainPane, primaryStage);
+		GridPane grid = this.registerAdmin(primaryStage);
+		mainPane.setCenter(grid);
+	}
+
+	private GridPane registerAdmin(Stage primaryStage) {
 		final Text actiontarget = new Text();
     	primaryStage.setTitle("Cadastro de usuário");
     	
@@ -38,7 +48,7 @@ public class Register extends LayoutUser {
     	grid.setPadding(new Insets(25, 25, 25, 25)); // define os pixels nos quatro lados
     	
     	// Header
-    	Text scenetitle = new Text("BEM-VINDO AO ROADTRIPS");
+    	Text scenetitle = new Text("ROADTRIPS");
     	scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
     	grid.add(scenetitle, 0, 0, 2, 1);
     	
@@ -60,89 +70,70 @@ public class Register extends LayoutUser {
     	TextField usrEmail = new TextField();
     	grid.add(usrEmail, 1, 3);
     	
-    	// Input Password
-    	Label senha = new Label("Senha: ");
-    	grid.add(senha, 0, 4);
-    	PasswordField usrSenha = new PasswordField();
-    	grid.add(usrSenha, 1, 4);
-    	
-    	// Input Confirm Password
-    	Label confSenha = new Label("Confirmar Senha: ");
-    	grid.add(confSenha, 0, 5);
-    	PasswordField usrConfSenha = new PasswordField();
-    	grid.add(usrConfSenha, 1, 5);
+    	// Select user type
+    	Label access = new Label("Tipo de acesso: ");
+    	grid.add(access, 0, 4);
+    	ChoiceBox<Object> userType = new ChoiceBox<>();
+    	userType.setItems(FXCollections.observableArrayList("Administrador", new Separator(), "Usuário Comum"));
+    	userType.setTooltip(new Tooltip("Selecione o tipo de usuário"));
+    	grid.add(userType, 1, 4);
     	
     	// Submit button
     	Button btn = new Button("Cadastrar");
     	HBox hbBtn = new HBox(10);
     	hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
     	hbBtn.getChildren().add(btn);
-    	grid.add(hbBtn, 1, 7);
-    	
-    	// link de login
-    	Label login = new Label("já tenho uma conta!");
-    	login.setTextFill(Color.DARKBLUE);
-    	grid.add(login, 0, 6, 2, 1);
+    	grid.add(hbBtn, 1, 6);
     	
     	// Mensagem de situation
-        grid.add(actiontarget, 1, 8);
+        grid.add(actiontarget, 1, 7);
         
         // Handler do botão de submit
         btn.setOnAction(new EventHandler<ActionEvent>() {
         	 
             @Override
             public void handle(ActionEvent e) {
-            	if (!usrName.getText().isEmpty() && !usrNickname.getText().isEmpty() && !usrEmail.getText().isEmpty() && !usrSenha.getText().isEmpty() && !usrConfSenha.getText().isEmpty()) {
-            		if (usrSenha.getText().equals(usrConfSenha.getText())) {
+            	if (!usrName.getText().isEmpty() && !usrNickname.getText().isEmpty() && !usrEmail.getText().isEmpty()) {
             			try {
-                			if (getUserFacade().registerUser(usrName.getText(), usrNickname.getText(), usrEmail.getText(), usrSenha.getText())) {
+        					if (userType.getValue().equals("Administrador")) {
+            					adminFacade.registerAdmin(usrName.getText(), usrNickname.getText(), usrEmail.getText(), "12345");
                 				actiontarget.setFill(Color.DARKGREEN);
                             	actiontarget.setText("Cadastrado com sucesso!");
                             	usrName.clear();
                             	usrNickname.clear();
                             	usrEmail.clear();
-                            	usrSenha.clear();
-                            	usrConfSenha.clear();
-                    		}
+            				} else if (userType.getValue().equals("Usuário Comum")) {
+    							getUserFacade().registerUser(usrName.getText(), usrNickname.getText(), usrEmail.getText(), "12345");    						
+                				actiontarget.setFill(Color.DARKGREEN);
+                            	actiontarget.setText("Cadastrado com sucesso!");
+                            	usrName.clear();
+                            	usrNickname.clear();
+                            	usrEmail.clear();
+            				}          				         			
                 		} catch (DuplicateUserException exception) {
                         	actiontarget.setFill(Color.FIREBRICK);
                         	actiontarget.setText("Usuário já existe!!");
                         	usrEmail.clear();
-                		}
-            		} else {
-            			actiontarget.setFill(Color.DARKGOLDENROD);
-                    	actiontarget.setText("Senhas divergem!");
-                    	usrSenha.clear();
-                    	usrConfSenha.clear();
-            		}
+                		} catch (NullPointerException exc) {
+                			try {
+								getUserFacade().registerUser(usrName.getText(), usrNickname.getText(), usrEmail.getText(), "12345");
+							} catch (DuplicateUserException e1) {
+								actiontarget.setFill(Color.FIREBRICK);
+	                        	actiontarget.setText("Usuário já existe!!");
+	                        	usrEmail.clear();
+							}
+            				actiontarget.setFill(Color.DARKGREEN);
+                        	actiontarget.setText("Cadastrado com sucesso!");
+                        	usrName.clear();
+                        	usrNickname.clear();
+                        	usrEmail.clear();
+                		}            	
             	} else {
             		actiontarget.setFill(Color.DARKGOLDENROD);
                 	actiontarget.setText("Preecha todos os campos!");
             	}
             }
         });
-        
-        //redirect to login page
-        login.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(MouseEvent event) {
-				Login login = new Login();
-				primaryStage.close();
-				try {
-					login.start(primaryStage);
-				} catch (Exception e) {
-					System.out.println("Exception login register");
-				}				
-			}
-        	
-        });
-        mainPane.setCenter(grid);
+        return grid;
 	}
-	
-	 @Override
-    public void start(Stage primaryStage) throws Exception {
-		super.start(primaryStage);
-    }
-
 }

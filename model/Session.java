@@ -43,7 +43,7 @@ public class Session {
 	}
 	
 	/**
-	 * Finaliza a sessão ativa.
+	 * Finaliza a sessão do usuário ativa.
 	 * 
 	 * @param User user
 	 * @return void
@@ -51,7 +51,6 @@ public class Session {
 	public void finalize() {
 		if (Session.instance != null) {
 			this.setUser(null);
-			Session.instance = null;
 		}
 	}
 }

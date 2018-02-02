@@ -20,9 +20,15 @@ import util.IGraph;
 public class AdjMapGraph<T> implements IGraph, Serializable {
     
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
      * HashMap de adjacencias. <br>
      * 
-     * Sendo que as chaves do primeiro <b>HashMap</b> representam os vertices do grafo. NÃ£o obstante, as chaves do segundo HashMap representam os vertices adjacentes ao vertice do primeiro HashMap, e o valor as arestas que ligam os vertices.
+     * Sendo que as chaves do primeiro <b>HashMap</b> representam os vertices do grafo. 
+     * Não obstante, as chaves do segundo HashMap representam os vertices adjacentes ao vertice do primeiro HashMap, e o valor as arestas que ligam os vertices.
      */
     private HashMap<T, HashMap<T, Aresta<T>>> adjacencias;
     
@@ -42,7 +48,8 @@ public class AdjMapGraph<T> implements IGraph, Serializable {
         adjacencias.put(object, new HashMap<>());
     }
     
-    public Iterator vertices() {
+    @SuppressWarnings("rawtypes")
+	public Iterator vertices() {
         if (!adjacencias.isEmpty()) {
             return adjacencias.keySet().iterator();
         }
@@ -86,7 +93,8 @@ public class AdjMapGraph<T> implements IGraph, Serializable {
     	throw new ArestaNotFoundException();
     }
     
-    public Iterator arestas() {
+    @SuppressWarnings("rawtypes")
+	public Iterator arestas() {
         if (!arestas.isEmpty()) {
             return arestas.iterator();
         }
